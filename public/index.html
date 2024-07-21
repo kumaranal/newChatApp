@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mini WhatsApp</title>
+  </head>
+  <body>
+    <h1>Mini WhatsApp</h1>
+    <div>
+      <input type="text" id="usernameInput" placeholder="Username" />
+      <button onclick="register()">Register</button>
+    </div>
+    <div>
+      <input type="text" id="groupInput" placeholder="Group name" />
+      <button onclick="joinGroup()">Join Group</button>
+      <button onclick="leaveGroup()">Leave Group</button>
+    </div>
+    <div>
+      <input type="text" id="recipientInput" placeholder="Recipient" />
+      <input type="text" id="privateMessageInput" placeholder="Private message" />
+      <button onclick="sendPrivateMessage()">Send Private Message</button>
+    </div>
+    <div>
+      <input type="text" id="groupMessageInput" placeholder="Group message" />
+      <button onclick="sendGroupMessage()">Send Group Message</button>
+    </div>
+    <ul id="messages"></ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      function register() {
+        const username = document.getElementById('usernameInput').value;
+        if (username) {
+          socket.emit('register', username);
+        }
+      }
+
+      function joinGroup() {
+        const group = document.getElementById('groupInput').value;
+        if (group) {
+          socket.emit('joinGroup', group);
+        }
+      }
+
+      function leaveGroup() {
+        const group = document.getElementById('groupInput').value;
+        if (group) {
+          socket.emit('leaveGroup', group);
+        }
+      }
+
+      function sendPrivateMessage() {
+        const to = document.getElementById('recipientInput').value;
+        const message = document.getElementById('privateMessageInput').value;
+        if (to && message) {
+          socket.emit('privateMessage', { to, message });
+        }
+      }
+
+      function sendGroupMessage() {
+        const group = document.getElementById('groupInput').value;
+        const message = document.getElementById('groupMessageInput').value;
+        if (group && message) {
+          socket.emit('groupMessage', { group, message });
+        }
+      }
+
+      socket.on('privateMessage', ({ from, message }) => {
+        const li = document.createElement('li');
+        li.textContent = `Private message from ${from}: ${message}`;
+        document.getElementById('messages').appendChild(li);
+      });
+
+      socket.on('groupMessage', ({ from, message }) => {
+        const li = document.createElement('li');
+        li.textContent = `Group message from ${from}: ${message}`;
+        document.getElementById('messages').appendChild(li);
+      });
+
+      socket.on('message', (msg) => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        document.getElementById('messages').appendChild(li);
+      });
+    </script>
+  </body>
+</html>
